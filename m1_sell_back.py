@@ -11,21 +11,22 @@ T = int(24 / period)  # 1 day
 # ($/MWh)
 
 # 1.2 Price
-prices = get_price_list('./data/USEP_08Nov2023_to_14Nov2023.csv')
-print('Prices:', prices)
-ctb = []
+ctb = get_price_list('./data/USEP_08Nov2023_to_14Nov2023.csv')
+print('Prices:', ctb)
 
-for i in range(0, len(prices), period):
-    ctb.append(sum([prices[i] for i in range(i, i + period)]))
+selling_price_discount = 0.9
 
 # 1.3 Demand in kwh
 Ed = 111.87
+cost_wo_battery = sum(Ed * (price/1000) for price in ctb)
 
 # 1.4 Battery
 number_of_battery = 1
-total_battery_cost = 33.86*number_of_battery  # per day
+battery_cost = 16.93 # per day
 
-single_battery_capacity_kwh = 50 # Battery capacity is fixed
+total_battery_cost = battery_cost*number_of_battery  # per day
+
+single_battery_capacity_kwh = 150 # Battery capacity is fixed
 Beta_max = single_battery_capacity_kwh * number_of_battery  # maximum battery capacity (define this)
 
 # ----------------------------------------------------------------
@@ -37,8 +38,9 @@ battery_power = model.addVars(T, name="battery_power")  # Current power of ESS
 # ----------------------------------------------------------------
 
 model.setObjective(sum((ctb[t]/1000) * (E[0, 2, t] + E[0, 1, t])
-                       + total_battery_cost
-                       - 0.8 * (ctb[t]/1000) * E[1, 0, t] for t in range(T)), GRB.MINIMIZE)
+                    - selling_price_discount * (ctb[t]/1000) * E[1, 0, t] for t in range(T))
+                    + total_battery_cost
+                    , GRB.MINIMIZE)
 
 # ----------------------------------------------------------------
 # Fulfill load demand
@@ -89,9 +91,13 @@ print('--------------------------------------------------')
 if model.Status == GRB.OPTIMAL:
     for t in range(T):
         label = ['Grid', 'ESS', 'Load']
-        print(f"Time {t}: Electricity Price = {ctb[t]/1000}, Battery Power = {battery_power[t].X}, ESS Charge = {y2tch[t].X}, ESS Discharge = {y2td[t].X}")
+        print(f"Time {t}: Electricity Price = {ctb[t]/1000} ,Battery Power = {battery_power[t].X}, ESS Charge = {y2tch[t].X}, ESS Discharge = {y2td[t].X}")
         for i in range(3):
             for j in range(3):
                 if E[i, j, t].X != 0:
                     print(f"{label[i]} to {label[j]} at {t} = {E[i, j, t].X}")
         print('--------------------------------------------------')
+
+print(f'Cost without battery: $ {cost_wo_battery}')
+print(f'Cost with battery: $ {model.objVal}')
+print(f'Cost difference: $ {cost_wo_battery - model.objVal}')
