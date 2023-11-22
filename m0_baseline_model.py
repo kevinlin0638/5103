@@ -58,6 +58,10 @@ for t in range(T):
     model.addConstr(battery_power[t] >= 0, f"PowerLowerBound_{t}")
     model.addConstr(battery_power[t] <= Beta_max, f"PowerUpperBound_{t}")
 
+# ESS min charge/discharge 1MWh
+model.addConstrs((E[0, 1, t] >= y2tch[t] for t in range(T)), "ChargeConstraint")
+model.addConstrs((E[1, 2, t] >= y2td[t] for t in range(T)), "DischargeConstraint")
+
 # ESS current power is based on previous round power
 for t in range(1, T):
     model.addConstr(battery_power[t] == battery_power[t-1] - E[1, 2, t-1] * y2td[t-1] + E[0, 1, t-1] * y2tch[t-1], "PowerUpdate")
