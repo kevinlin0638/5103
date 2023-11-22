@@ -3,27 +3,29 @@ from price_calculator import get_price_list
 
 model = Model("Optimization")
 
-period = 2  # number of hours
+# 1. Parameter
+
+# 1.1 Time
+period = 1  # number of hours
 T = int(24 / period)  # 1 day
 # ($/MWh)
-prices = get_price_list('./data/USEP_29Oct2023_to_04Nov2023.csv')
+
+# 1.2 Price
+prices = get_price_list('./data/USEP_08Nov2023_to_14Nov2023.csv')
 print('Prices:', prices)
 ctb = []
+
 for i in range(0, len(prices), period):
     ctb.append(sum([prices[i] for i in range(i, i + period)]))
-minimum_battery_support_hours = 1   # one hour
-annual_electricity_consumption_gwh = 9
+
+# 1.3 Demand in kwh
+Ed = 111.87
+
+# 1.4 Battery
 number_of_battery = 1
-number_of_technician = 1  # number of technicians depending on the battery number
-battery_cost = 2.05  # /kWh
-technician_cost = 89.4  # /kWh
+total_battery_cost = 33.86*number_of_battery  # per day
 
-
-two_hours_in_year = 365 * 24 / period
-average_two_hourly_consumption_gwh = annual_electricity_consumption_gwh / two_hours_in_year
-average_two_hourly_consumption_kwh = average_two_hourly_consumption_gwh * 1000000
-Ed = average_two_hourly_consumption_kwh  # fixed load demand (define this)
-single_battery_capacity_kwh = average_two_hourly_consumption_kwh * minimum_battery_support_hours / period
+single_battery_capacity_kwh = 50 # Battery capacity is fixed
 Beta_max = single_battery_capacity_kwh * number_of_battery  # maximum battery capacity (define this)
 
 # ----------------------------------------------------------------
@@ -35,8 +37,7 @@ battery_power = model.addVars(T, name="battery_power")  # Current power of ESS
 # ----------------------------------------------------------------
 
 model.setObjective(sum((ctb[t]/1000) * (E[0, 2, t] + E[0, 1, t]) +
-                       battery_cost * number_of_battery * period +
-                       technician_cost * number_of_technician * period for t in range(T)), GRB.MINIMIZE)
+                       total_battery_cost for t in range(T)), GRB.MINIMIZE)
 
 # ----------------------------------------------------------------
 # Fulfill load demand
@@ -77,19 +78,16 @@ elif model.Status == GRB.UNBOUNDED:
 else:
     print("Optimization ended with status:", model.Status)
 print('--------------------------------------------------')
-print(f"Annual power consumption: {average_two_hourly_consumption_gwh} GWh")
-print(f"Minimum supported hours: {minimum_battery_support_hours}")
+print(f"Average hourly power consumption: {Ed} kwh")
 print(f"Number of battery: {number_of_battery}")
-print(f"Battery cost: ${battery_cost}")
-print(f"Number of technicians: {number_of_technician}")
-print(f"Technician cost: ${technician_cost}")
+print(f"Total battery cost: ${total_battery_cost}")
 
 print(f"Max battery capacity: {Beta_max} kWh")
 print('--------------------------------------------------')
 if model.Status == GRB.OPTIMAL:
     for t in range(T):
         label = ['Grid', 'ESS', 'Load']
-        print(f"Time {t}: Battery Power = {battery_power[t].X}, ESS Charge = {y2tch[t].X}, ESS Discharge = {y2td[t].X}")
+        print(f"Time {t}: Electricity Price = {ctb[t]/1000} ,Battery Power = {battery_power[t].X}, ESS Charge = {y2tch[t].X}, ESS Discharge = {y2td[t].X}")
         for i in range(3):
             for j in range(3):
                 if E[i, j, t].X != 0:
