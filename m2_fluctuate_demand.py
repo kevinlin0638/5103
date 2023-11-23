@@ -8,11 +8,11 @@ model = Model("Optimization")
 period = 2  # number of hours
 T = int(24 / period)  # 1 day
 # ($/MWh)
-prices = get_price_list('./data/USEP_29Oct2023_to_04Nov2023.csv')
+prices = get_price_list('./data/USEP_08Nov2023_to_14Nov2023.csv')
 print('Prices:', prices)
 ctb = []
 for i in range(0, len(prices), period):
-    ctb.append(sum([prices[i] for i in range(i, i + period)]))
+    ctb.append(np.mean([prices[i] for i in range(i, i + period)]))
 
 minimum_battery_support_hours = 1   # one hour
 annual_electricity_consumption_gwh = 9
@@ -25,11 +25,11 @@ technician_cost = 89.4  # /kWh
 hours_in_year = 365 * 24 / period
 average_hourly_consumption_gwh = annual_electricity_consumption_gwh / hours_in_year
 average_hourly_consumption_kwh = average_hourly_consumption_gwh * 1000000
-consumption_std_dev = 65.8
-consumption = np.random.normal(average_hourly_consumption_kwh, consumption_std_dev, int(24 / period))
+consumption_std_dev = 9.86
+consumption = np.random.normal(111.87 * 2, consumption_std_dev * 2, int(24 / period))
 Ed = consumption.tolist()  # fixed load demand (define this)
 print(f"Consumption (kWh): {Ed}")
-single_battery_capacity_kwh = average_hourly_consumption_kwh * minimum_battery_support_hours / period
+single_battery_capacity_kwh = 111.87 * 2 * minimum_battery_support_hours / period
 Beta_max = single_battery_capacity_kwh * number_of_battery  # maximum battery capacity (define this)
 
 # ----------------------------------------------------------------
