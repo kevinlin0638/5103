@@ -1,3 +1,4 @@
+import numpy as np
 from gurobipy import Model, GRB
 from price_calculator import get_price_list
 
@@ -6,16 +7,20 @@ model = Model("Optimization")
 # 1. Parameter
 
 # 1.1 Time
-period = 1  # number of hours
+period = 2  # number of hours
 T = int(24 / period)  # 1 day
 # ($/MWh)
 
 # 1.2 Price
-ctb = get_price_list('./data/USEP_08Nov2023_to_14Nov2023.csv')
+prices = get_price_list('./data/USEP_08Nov2023_to_14Nov2023.csv')
+print('Prices:', prices)
+ctb = []
+for i in range(0, len(prices), period):
+    ctb.append(np.mean([prices[i] for i in range(i, i + period)]))
 print('Prices:', ctb)
 
 # 1.3 Demand in kwh
-Ed = 111.87
+Ed = 111.87 * 2
 cost_wo_battery = sum(Ed * (price/1000) for price in ctb)
 
 # 1.4 Battery
