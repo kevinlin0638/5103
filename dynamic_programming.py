@@ -9,7 +9,8 @@ T = 24  # Total number of hours
 single_battery_capacity = 150  # battery capacity in kWh
 consumption_std_dev = 9.86
 demand = np.random.normal(111.87, consumption_std_dev, 24)
-number_of_battery = math.ceil(111.87 / single_battery_capacity)
+minimum_battery_support_hours = 5   # one hour
+number_of_battery = math.ceil(111.87 * minimum_battery_support_hours / single_battery_capacity)
 battery_capacity = 150 * number_of_battery
 
 battery_cost = 1.41  # /kWh
@@ -35,13 +36,13 @@ def find_min_cost(t, battery_level):
     cost_charge = 0.5 * battery_capacity * prices[t]
     new_battery_level_charge = min(battery_level + 0.5 * battery_capacity, battery_capacity)
     future_cost_charge, future_decisions_charge = find_min_cost(t + 1, new_battery_level_charge)
-    total_cost_charge = cost_charge + demand[t] * prices[t] + future_cost_charge + battery_cost + technician_cost
+    total_cost_charge = cost_charge + demand[t] * prices[t] + future_cost_charge + battery_cost * number_of_battery
 
     # Decision 2: Discharge all from the battery
     discharge_amount = min(battery_level, demand[t])
     new_battery_level_discharge = max(battery_level - discharge_amount, 0)
     future_cost_discharge, future_decisions_discharge = find_min_cost(t + 1, new_battery_level_discharge)
-    total_cost_discharge = (demand[t] - discharge_amount) * prices[t] + future_cost_discharge + battery_cost + technician_cost
+    total_cost_discharge = (demand[t] - discharge_amount) * prices[t] + future_cost_discharge + battery_cost * number_of_battery
 
     # Choose the decision with minimum cost
     if total_cost_charge < total_cost_discharge:
@@ -60,5 +61,5 @@ print("Total Cost:", min_cost)
 
 original_cost = 0
 for i in range(T):
-    original_cost += (demand[i] * prices[i] + battery_cost + technician_cost)
+    original_cost += (demand[i] * prices[i])
 print("Origin Cost:", original_cost)
