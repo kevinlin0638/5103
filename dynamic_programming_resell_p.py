@@ -1,15 +1,15 @@
 import math
 
 import numpy as np
-
+import pandas as pd
 from price_calculator import get_price_list
 
 # Constants and Inputs
-T = 24  # Total number of hours
+T = 24*2  # Total number of hours
 # single_battery_capacity = 150  # battery capacity in kWh
 # consumption_std_dev = 9.86
 # demand = np.random.normal(111.87, consumption_std_dev, 24)
-demand = [111.87 for i in range(T)]
+demand = [111.87/2 for i in range(T)]
 minimum_battery_support_hours = 1   # one hour
 # number_of_battery = math.ceil(111.87 * minimum_battery_support_hours / single_battery_capacity)
 number_of_battery = 1
@@ -20,7 +20,11 @@ total_battery_cost = battery_cost*number_of_battery  # per day
 
 # technician_cost = 89.4  # /kWh
 
-prices = get_price_list('./data/USEP_08Nov2023_to_14Nov2023.csv')
+price_df = pd.read_csv('./data/price_pr.csv')
+prices = price_df['mean'].to_list()
+price_prob = price_df['probability'].to_list()
+price_diff = price_df['diff_mean'].to_list()
+
 for i in range(len(prices)):
     prices[i] = prices[i] / 1000
 
@@ -36,7 +40,7 @@ def find_min_cost(t, battery_level):
     if (t, battery_level) in memo:
         return memo[(t, battery_level)]
 
-    # Decision 1: Charge the battery by 50%
+    # Decision 1: Charge the battery
     cost_charge = battery_capacity * prices[t]
     new_battery_level_charge = min(battery_level + battery_capacity, battery_capacity)
     future_cost_charge, future_decisions_charge, future_charge_level = find_min_cost(t + 1, new_battery_level_charge)
