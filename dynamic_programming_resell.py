@@ -40,9 +40,10 @@ def find_min_cost(t, battery_level):
 
     # Decision 2: Discharge all from the battery
     discharge_amount = min(battery_level, demand[t])
-    new_battery_level_discharge = max(battery_level - discharge_amount, 0)
+    resell_amount = battery_level - discharge_amount
+    new_battery_level_discharge = 0
     future_cost_discharge, future_decisions_discharge, future_discharge_level = find_min_cost(t + 1, new_battery_level_discharge)
-    total_cost_discharge = (demand[t] - discharge_amount) * prices[t] + future_cost_discharge + battery_cost * number_of_battery
+    total_cost_discharge = (demand[t] - discharge_amount) * prices[t] + future_cost_discharge + battery_cost * number_of_battery - resell_amount * prices[t] * 0.9
 
     # Choose the decision with minimum cost
     if total_cost_charge < total_cost_discharge:
