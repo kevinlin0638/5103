@@ -14,7 +14,7 @@ T = 48 # 1 day, every 30 minutes
 
 # 1.2 Price
 
-prices = pd.read_csv('./data/USEP_08Nov2023_to_14Nov2023.csv')
+prices = pd.read_csv('./data/USEP_08Nov2023.csv')
 ctb = prices['USEP ($/MWh)'].tolist()
 
 # 1.3 Demand in kwh
@@ -24,7 +24,7 @@ cost_wo_battery = sum(Ed * (price/1000) for price in ctb)
 # 1.4 Battery
 number_of_battery = 1
 battery_cost = 11.35 # per day
-DC_AC_efficiency = 0.94
+DC_AC_efficiency = 1
 
 total_battery_cost = battery_cost*number_of_battery  # per day
 
