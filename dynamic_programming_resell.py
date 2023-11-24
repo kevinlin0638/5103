@@ -49,8 +49,14 @@ def find_min_cost(t, battery_level):
     future_cost_discharge, future_decisions_discharge, future_discharge_level = find_min_cost(t + 1, new_battery_level_discharge)
     total_cost_discharge = (demand[t] - discharge_amount) * prices[t] + future_cost_discharge - resell_amount * prices[t] * 0.9
 
-    # Choose the decision with minimum cost
-    if total_cost_charge < total_cost_discharge:
+    # Decision 3: Do nothing
+    future_cost_do_nothing, future_decisions_do_nothing, future_do_nothing_level = find_min_cost(t + 1, battery_level)
+    total_cost_do_nothing = demand[t] * prices[t] + future_cost_do_nothing
+
+    target = min(total_cost_do_nothing, total_cost_charge, total_cost_discharge)
+    if target == total_cost_do_nothing:
+        memo[(t, battery_level)] = (total_cost_do_nothing, ["Do Nothing"] + future_decisions_do_nothing, [battery_level] + future_do_nothing_level)
+    elif target == total_cost_charge:
         memo[(t, battery_level)] = (total_cost_charge, ["Charge"] + future_decisions_charge, [new_battery_level_charge] + future_charge_level)
     else:
         memo[(t, battery_level)] = (total_cost_discharge, ["Discharge"] + future_decisions_discharge, [new_battery_level_discharge] + future_discharge_level)
