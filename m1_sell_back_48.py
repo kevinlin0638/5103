@@ -2,8 +2,6 @@ from gurobipy import Model, GRB
 import pandas as pd
 import csv
 
-output_file_path = 'data/m1_output_data_48.csv'
-
 model = Model("Optimization")
 
 # 1. Parameter
@@ -15,7 +13,7 @@ T = 48 # 1 day, every 30 minutes
 
 # 1.2 Price
 
-prices = pd.read_csv('data/USEP_08Nov2023.csv')
+prices = pd.read_csv('./data/USEP_08Nov2023_to_14Nov2023.csv')
 ctb = prices['USEP ($/MWh)'].tolist()
 
 selling_price_discount = 0.9
@@ -27,12 +25,12 @@ cost_wo_battery = sum(Ed * (price/1000) for price in ctb)
 # 1.4 Battery
 number_of_battery = 1
 battery_cost = 11.35 # per day
-DC_AC_efficiency = 1
+DC_AC_efficiency = 0.94
 
 total_battery_cost = battery_cost*number_of_battery  # per day
 
-single_battery_capacity = 150 # Battery capacity is fixed
-Beta_max = single_battery_capacity * number_of_battery  # maximum battery capacity (define this)
+single_battery_capacity_kwh = 150 # Battery capacity is fixed
+Beta_max = single_battery_capacity_kwh * number_of_battery  # maximum battery capacity (define this)
 
 # ----------------------------------------------------------------
 E = model.addVars(3, 3, T, name="E")  # Energy variables Eijt
@@ -112,7 +110,7 @@ print(f'Cost with battery: $ {model.objVal}')
 print(f'Cost difference: $ {cost_wo_battery - model.objVal}')
 
 # write data in csv
-with open(output_file_path, mode='w', newline='') as csv_file:
+with open('./data/m1_output_data_0.5h.csv', mode='w', newline='') as csv_file:
     writer = csv.writer(csv_file)
 
     # Write header
