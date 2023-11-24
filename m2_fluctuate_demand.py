@@ -15,7 +15,7 @@ T = int(24 / period)  # 1 day
 # ($/MWh)
 
 # 1.2 Price
-ctb = get_price_list('./data/USEP_08Nov2023_to_14Nov2023.csv')
+ctb = get_price_list('data/USEP_08Nov2023.csv')
 print('Prices:', ctb)
 
 selling_price_discount = 0.9
@@ -34,8 +34,8 @@ battery_cost = 16.93 # per day
 
 total_battery_cost = battery_cost*number_of_battery  # per day
 
-single_battery_capacity_kwh = 150 # Battery capacity is fixed
-Beta_max = single_battery_capacity_kwh * number_of_battery  # maximum battery capacity (define this)
+single_battery_capacity = 150 # Battery capacity is fixed
+Beta_max = single_battery_capacity * number_of_battery  # maximum battery capacity (define this)
 
 # ----------------------------------------------------------------
 E = model.addVars(3, 3, T, name="E")  # Energy variables Eijt

@@ -16,7 +16,7 @@ battery_capacity = 150 * number_of_battery
 battery_cost = 1.41  # /kWh
 technician_cost = 89.4  # /kWh
 
-prices = get_price_list('./data/USEP_08Nov2023_to_14Nov2023.csv')
+prices = get_price_list('data/USEP_08Nov2023.csv')
 for i in range(len(prices)):
     prices[i] = prices[i] / 1000
 
