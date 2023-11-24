@@ -1,7 +1,7 @@
-import numpy as np
+
+import csv
 import pandas as pd
 from gurobipy import Model, GRB
-from price_calculator import get_price_list
 
 model = Model("Optimization")
 
@@ -105,3 +105,22 @@ if model.Status == GRB.OPTIMAL:
 print(f'Cost without battery: $ {cost_wo_battery}')
 print(f'Cost with battery: $ {model.objVal}')
 print(f'Cost difference: $ {cost_wo_battery - model.objVal}')
+
+# write data in csv
+with open('./data/m0_output_data_0.5h.csv', mode='w', newline='') as csv_file:
+    writer = csv.writer(csv_file)
+
+    # Write header
+    header = ['Time', 'Electricity Price', 'Battery Power', 'ESS Charge', 'ESS Discharge']
+    for i in range(3):
+        for j in range(3):
+            header.append(f'E[{i},{j}]')
+    writer.writerow(header)
+
+    # Write data
+    for t in range(T):
+        row = [t, ctb[t]/1000, battery_power[t].X, y2tch[t].X, y2td[t].X]
+        for i in range(3):
+            for j in range(3):
+                row.append(E[i, j, t].X)
+        writer.writerow(row)
