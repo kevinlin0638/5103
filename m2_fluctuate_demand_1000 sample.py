@@ -26,7 +26,7 @@ selling_price_discount = 0.9
 
 # 1.3 Demand in kwh
 consumption_mean = 111.87*0.5
-consumption_std_dev = 9.86*0.5
+consumption_std_dev = 4.93
 
 
 # 1.4 Battery
