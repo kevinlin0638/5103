@@ -30,7 +30,7 @@ Ed = 111.87 * 0.5
 # 1.4 Battery
 number_of_battery = 1
 battery_cost = 11.35 # per day
-DC_AC_efficiency = 0.94
+DC_AC_efficiency = 1
 
 total_battery_cost = battery_cost*number_of_battery  # per day
 
@@ -138,7 +138,7 @@ for i in range(sample_size):
 result_df = pd.DataFrame(result_all)
 
 # Save to JSON
-with open('./data/results_m3.json', 'w') as f:
+with open('./data/results_m3_1.json', 'w') as f:
     json.dump(result_all, f)
 
 # ----------------------------------------------------------------
