@@ -1,0 +1,49 @@
+Time,Electricity Price,Battery Power,Battery Decision
+0,0.12384,0,Do Nothing
+1,0.12336,150,Charge
+2,0.13090000000000002,150,Do Nothing
+3,0.13232,0,Discharge
+4,0.13229,0,Do Nothing
+5,0.13088,0,Do Nothing
+6,0.12378,0,Do Nothing
+7,0.12331,0,Do Nothing
+8,0.12253,150,Charge
+9,0.12329000000000001,150,Do Nothing
+10,0.12417,150,Do Nothing
+11,0.13568,150,Do Nothing
+12,0.17061,0,Discharge
+13,0.14701,0,Do Nothing
+14,0.13649,0,Do Nothing
+15,0.13577,0,Do Nothing
+16,0.13584000000000002,0,Do Nothing
+17,0.1361,0,Do Nothing
+18,0.13575,0,Do Nothing
+19,0.13595,0,Do Nothing
+20,0.13576,0,Do Nothing
+21,0.14401,0,Do Nothing
+22,0.14176,0,Do Nothing
+23,0.13359000000000001,150,Charge
+24,0.1336,150,Do Nothing
+25,0.18378,150,Do Nothing
+26,0.28085000000000004,0,Discharge
+27,0.1742,0,Do Nothing
+28,0.13097,150,Charge
+29,0.144,150,Do Nothing
+30,0.28082,150,Do Nothing
+31,0.38118,150,Do Nothing
+32,0.39379000000000003,0,Discharge
+33,0.36769999999999997,0,Do Nothing
+34,0.35199,0,Do Nothing
+35,0.21506,0,Do Nothing
+36,0.22375,0,Do Nothing
+37,0.18417,0,Do Nothing
+38,0.18844999999999998,0,Do Nothing
+39,0.17774,150,Charge
+40,0.5285299999999999,0,Discharge
+41,0.5283300000000001,0,Do Nothing
+42,0.39042,0,Do Nothing
+43,0.23449,0,Do Nothing
+44,0.23439,0,Do Nothing
+45,0.18349000000000001,0,Do Nothing
+46,0.14794,0,Do Nothing
+47,0.13717,0,Do Nothing

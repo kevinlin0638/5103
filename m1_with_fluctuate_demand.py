@@ -3,7 +3,7 @@ from gurobipy import Model, GRB
 from price_calculator import get_price_list
 import csv
 
-output_file_path = 'data/m0_output_data_1h.csv'
+output_file_path = 'data/m2_output_data_1h.csv'
 
 model = Model("Optimization")
 
@@ -15,12 +15,18 @@ T = int(24 / period)  # 1 day
 # ($/MWh)
 
 # 1.2 Price
-ctb = get_price_list('./data/USEP_08Nov2023_to_14Nov2023.csv')
+ctb = get_price_list('data/USEP_08Nov2023.csv')
 print('Prices:', ctb)
 
+selling_price_discount = 0.9
+
 # 1.3 Demand in kwh
-Ed = 111.87
-cost_wo_battery = sum(Ed * (price/1000) for price in ctb)
+np.random.seed(2023)
+consumption_mean = 111.87
+consumption_std_dev = 9.86
+consumption = np.random.normal(consumption_mean, consumption_std_dev, T)
+Ed = consumption.tolist()  # fixed load demand (define this)
+cost_wo_battery = sum(x * y/1000 for x, y in zip(Ed, ctb))
 
 # 1.4 Battery
 number_of_battery = 1
@@ -28,8 +34,8 @@ battery_cost = 16.93 # per day
 
 total_battery_cost = battery_cost*number_of_battery  # per day
 
-single_battery_capacity_kwh = 150 # Battery capacity is fixed
-Beta_max = single_battery_capacity_kwh * number_of_battery  # maximum battery capacity (define this)
+single_battery_capacity = 150 # Battery capacity is fixed
+Beta_max = single_battery_capacity * number_of_battery  # maximum battery capacity (define this)
 
 # ----------------------------------------------------------------
 E = model.addVars(3, 3, T, name="E")  # Energy variables Eijt
@@ -39,19 +45,20 @@ battery_power = model.addVars(T, name="battery_power")  # Current power of ESS
 
 # ----------------------------------------------------------------
 
-model.setObjective(sum((ctb[t]/1000) * (E[0, 2, t] + E[0, 1, t]) for t in range(T))
-                   + total_battery_cost
-                   , GRB.MINIMIZE)
+model.setObjective(sum((ctb[t]/1000) * (E[0, 2, t] + E[0, 1, t])
+                    - selling_price_discount * (ctb[t]/1000) * E[1, 0, t] for t in range(T))
+                    + total_battery_cost
+                    , GRB.MINIMIZE)
 
 # ----------------------------------------------------------------
 # Fulfill load demand
-model.addConstrs((E[0, 2, t] + E[1, 2, t] == Ed for t in range(T)), "LoadDemand")
+model.addConstrs((E[0, 2, t] + E[1, 2, t] == Ed[t] for t in range(T)), "LoadDemand")
 
 # ESS does not charge and discharge simultaneously
 model.addConstrs((y2tch[t] + y2td[t] <= 1 for t in range(T)), "ChargeDischarge")
 
 # ESS discharge does not exceed its current power
-model.addConstrs((E[1, 2, t] <= battery_power[t] * y2td[t] for t in range(T)), "DischargeLimit")
+model.addConstrs((E[1, 2, t] + E[1, 0, t] <= battery_power[t] * y2td[t] for t in range(T)), "DischargeLimit")
 
 # ESS charge does not exceed what’s left
 model.addConstrs((E[0, 1, t] <= (Beta_max - battery_power[t]) * y2tch[t] for t in range(T)), "ChargeLimit")
@@ -68,7 +75,8 @@ model.addConstrs((E[1, 2, t] >= y2td[t] for t in range(T)), "DischargeConstraint
 
 # ESS current power is based on previous round power
 for t in range(1, T):
-    model.addConstr(battery_power[t] == battery_power[t-1] - E[1, 2, t-1] * y2td[t-1] + E[0, 1, t-1] * y2tch[t-1], "PowerUpdate")
+    model.addConstr(battery_power[t] == battery_power[t-1] - (E[1, 2, t-1] + E[1, 0, t-1]) * y2td[t-1] +
+                    E[0, 1, t-1] * y2tch[t-1], "PowerUpdate")
 
 # Battery fully discharged at t=1
 model.addConstr(battery_power[0] == 0, "InitialDischarge")
